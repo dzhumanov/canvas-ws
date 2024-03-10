@@ -26,7 +26,7 @@ router.ws("/canvas", (ws, req) => {
     })
   );
 
-  ws.on("paint", (paint) => {
+  ws.on("message", (paint) => {
     const parsedMessage = JSON.parse(paint.toString()) as IncomingAction;
     if (parsedMessage.type === "DRAW") {
       canvas.push(parsedMessage.payload);
