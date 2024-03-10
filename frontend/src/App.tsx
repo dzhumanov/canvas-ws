@@ -17,6 +17,8 @@ function App() {
       const data = JSON.parse(event.data);
       if (data.type === "NEW_DATA") {
         setPixels(data.payload);
+      } else if (data.type === "CURRENT") {
+        setPixels(data.payload);
       }
     };
 
@@ -51,7 +53,7 @@ function App() {
       if (ctx) {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         pixels.forEach((pixel) => {
-          ctx.fillRect(pixel.x, pixel.y, 1, 1);
+          ctx.fillRect(pixel.x, pixel.y, 10, 10);
         });
       }
     }

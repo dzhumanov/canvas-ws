@@ -8,3 +8,8 @@ export interface IncomingAction {
   type: string;
   payload: string;
 }
+
+export interface Pixel {
+  x: number;
+  y: number;
+}
