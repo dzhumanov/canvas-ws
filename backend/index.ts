@@ -1,7 +1,7 @@
 import cors from "cors";
 import express from "express";
 import expressWs from "express-ws";
-import { ActiveConnections, IncomingAction } from "./types";
+import { ActiveConnections, IncomingAction, Pixel } from "./types";
 import crypto from "crypto";
 
 const app = express();
@@ -15,7 +15,7 @@ const router = express.Router();
 
 const activeConnections: ActiveConnections = {};
 
-let canvas: string[] = [];
+let canvas: Pixel[] = [];
 
 router.ws("/canvas", (ws, req) => {
   const id = crypto.randomUUID();
@@ -39,7 +39,8 @@ router.ws("/canvas", (ws, req) => {
   ws.on("message", (paint) => {
     const parsedMessage = JSON.parse(paint.toString()) as IncomingAction;
     if (parsedMessage.type === "DRAW") {
-      canvas.push(parsedMessage.payload);
+      const newPixels = parsedMessage.payload;
+      canvas.push(...newPixels);
       broadcastCanvas(canvas);
     }
   });
@@ -50,7 +51,7 @@ router.ws("/canvas", (ws, req) => {
   });
 });
 
-function broadcastCanvas(canvas: string[]) {
+function broadcastCanvas(canvas: Pixel[]) {
   Object.values(activeConnections).forEach((connection) => {
     const outgoingData = {
       type: "NEW_DATA",

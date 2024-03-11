@@ -3,6 +3,7 @@ import { Pixel } from "./types";
 
 function App() {
   const [pixels, setPixels] = useState<Pixel[]>([]);
+  const isDrawing = useRef<boolean>(false);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const ws = useRef<WebSocket | null>(null);
 
@@ -29,21 +30,37 @@ function App() {
     };
   }, []);
 
-  const handleDraw = (x: number, y: number) => {
+  const handleDraw = (newPixels: Pixel[]) => {
     if (!ws.current) return;
-    const pixel = { x, y };
-    const action = { type: "DRAW", payload: pixel };
+    const action = { type: "DRAW", payload: newPixels };
     ws.current.send(JSON.stringify(action));
   };
 
-  const handleCanvasClick = (event: React.MouseEvent<HTMLCanvasElement>) => {
+  const handleMouseDown = (event: React.MouseEvent<HTMLCanvasElement>) => {
+    const canvas = canvasRef.current;
+    if (canvas) {
+      isDrawing.current = true;
+      const rect = canvas.getBoundingClientRect();
+      const x = event.clientX - rect.left;
+      const y = event.clientY - rect.top;
+      setPixels([...pixels, { x, y }]);
+    }
+  };
+
+  const handleMouseMove = (event: React.MouseEvent<HTMLCanvasElement>) => {
+    if (!isDrawing.current) return;
     const canvas = canvasRef.current;
     if (canvas) {
       const rect = canvas.getBoundingClientRect();
       const x = event.clientX - rect.left;
       const y = event.clientY - rect.top;
-      handleDraw(x, y);
+      setPixels([...pixels, { x, y }]);
     }
+  };
+
+  const handleMouseUp = () => {
+    isDrawing.current = false;
+    handleDraw(pixels);
   };
 
   useEffect(() => {
@@ -67,7 +84,9 @@ function App() {
         width="1000"
         height="800"
         style={{ border: "1px solid black" }}
-        onClick={handleCanvasClick}
+        onMouseDown={handleMouseDown}
+        onMouseMove={handleMouseMove}
+        onMouseUp={handleMouseUp}
       ></canvas>
     </>
   );
